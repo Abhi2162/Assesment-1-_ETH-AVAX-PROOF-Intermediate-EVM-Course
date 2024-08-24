@@ -80,6 +80,7 @@ contract SkillBasedTaskMarket {
         Task storage task = tasks[taskId];
 
         task.isCompleted = true;
+        assert(task.isCompleted == true); 
 
         emit TaskCompleted(taskId, msg.sender);
     }
@@ -91,7 +92,10 @@ contract SkillBasedTaskMarket {
         uint256 reward = task.reward;
         task.reward = 0;
 
-        payable(task.worker).transfer(reward);
+        (bool success, ) = task.worker.call{value: reward}("");
+        if (!success) {
+            revert("Transfer failed.");
+        }
 
         emit RewardClaimed(taskId, task.worker, reward);
     }
@@ -101,6 +105,7 @@ contract SkillBasedTaskMarket {
         return (task.description, task.reward, task.employer, task.worker, task.isCompleted);
     }
 }
+
 ```
           
          
